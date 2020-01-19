@@ -3,10 +3,12 @@ package org.jenkinsci.plugins.builduser;
 import com.sonyericsson.rebuild.RebuildCause;
 
 import org.jenkinsci.plugins.builduser.varsetter.IUsernameSettable;
+import org.jenkinsci.plugins.builduser.varsetter.impl.ParamTimerCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.SCMTriggerCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.TimerTriggerCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.UserCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.UserIdCauseDeterminant;
+import org.jenkinsci.plugins.parameterizedscheduler.ParameterizedTimerTriggerCause;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.HashMap;
@@ -89,32 +91,44 @@ public class BuildUser extends SimpleBuildWrapper {
             }
         }
         if (rebuildCause != null && userIdCause != null) {
-            if (new UserIdCauseDeterminant().setJenkinsUserBuildVars(userIdCause, variables)) {
+            UserIdCauseDeterminant ud = new UserIdCauseDeterminant();
+            if (ud.setJenkinsUserBuildVars(userIdCause, variables)) {
                 return;
             }
         }
 
         // set BUILD_USER_NAME to fixed value if the build was triggered by a change in the scm
         SCMTrigger.SCMTriggerCause scmTriggerCause = (SCMTrigger.SCMTriggerCause) build.getCause(SCMTrigger.SCMTriggerCause.class);
-        if (new SCMTriggerCauseDeterminant().setJenkinsUserBuildVars(scmTriggerCause, variables)) {
+        SCMTriggerCauseDeterminant sd = new SCMTriggerCauseDeterminant();
+        if (sd.setJenkinsUserBuildVars(scmTriggerCause, variables)) {
             return;
         }
 
-        TimerTrigger.TimerTriggerCause timerTriggerCause = (TimerTrigger.TimerTriggerCause) build.getCause(TimerTrigger.TimerTriggerCause.class);
-        if (new TimerTriggerCauseDeterminant().setJenkinsUserBuildVars(timerTriggerCause, variables)) {
+        TimerTrigger.TimerTriggerCause ttCause = (TimerTrigger.TimerTriggerCause) build.getCause(TimerTrigger.TimerTriggerCause.class);
+        TimerTriggerCauseDeterminant ttd = new TimerTriggerCauseDeterminant();
+        if (ttd.setJenkinsUserBuildVars(ttCause, variables)) {
+            return;
+        }
+        ParameterizedTimerTriggerCause ptCause = (ParameterizedTimerTriggerCause) build.getCause(ParameterizedTimerTriggerCause.class);
+        ParamTimerCauseDeterminant ptd = new ParamTimerCauseDeterminant();
+        if (ptd.setJenkinsUserBuildVars(ptCause, variables)) {
             return;
         }
         /* Try to use UserIdCause to get & set jenkins user build variables */
         userIdCause = (UserIdCause) build.getCause(UserIdCause.class);
-        if (new UserIdCauseDeterminant().setJenkinsUserBuildVars(userIdCause, variables)) {
+        UserIdCauseDeterminant uid = new UserIdCauseDeterminant();
+        if (uid.setJenkinsUserBuildVars(userIdCause, variables)) {
             return;
         }
 
         // Try to use deprecated UserCause to get & set jenkins user build variables
         UserCause userCause = (UserCause) build.getCause(UserCause.class);
-        if (new UserCauseDeterminant().setJenkinsUserBuildVars(userCause, variables)) {
+        UserCauseDeterminant ucd = new UserCauseDeterminant();
+        if (ucd.setJenkinsUserBuildVars(userCause, variables)) {
             return;
         }
+        Cause cause = (Cause) build.getCause(Cause.class);
+        System.out.println(cause);
     }
 
 
