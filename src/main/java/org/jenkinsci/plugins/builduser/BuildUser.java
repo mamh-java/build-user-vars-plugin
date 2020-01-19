@@ -3,8 +3,8 @@ package org.jenkinsci.plugins.builduser;
 import com.sonyericsson.rebuild.RebuildCause;
 
 import org.jenkinsci.plugins.builduser.varsetter.IUsernameSettable;
-import org.jenkinsci.plugins.builduser.varsetter.impl.ParamTimerCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.DefaultCauseDeterminant;
+import org.jenkinsci.plugins.builduser.varsetter.impl.ParamTimerCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.SCMTriggerCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.TimerTriggerCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.UserCauseDeterminant;
@@ -15,6 +15,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
@@ -44,6 +45,7 @@ import jenkins.tasks.SimpleBuildWrapper;
  */
 @SuppressWarnings("deprecation")
 public class BuildUser extends SimpleBuildWrapper {
+    private static final Logger LOGGER = Logger.getLogger(BuildUser.class.getName());
 
     private static final String EXTENSION_DISPLAY_NAME = "Set jenkins user build variables";
 
@@ -128,11 +130,12 @@ public class BuildUser extends SimpleBuildWrapper {
         if (ucd.setJenkinsUserBuildVars(userCause, variables)) {
             return;
         }
-
-        Cause defaultTriggerCause =  build.getCause(Cause.class);
-        DefaultCauseDeterminant determinat = new DefaultCauseDeterminant();
-        if (determinat.setJenkinsUserBuildVars(defaultTriggerCause, variables)) {
-            return;
+        if(variables.isEmpty()){
+            Cause defaultTriggerCause = build.getCause(Cause.class);
+            DefaultCauseDeterminant determinat = new DefaultCauseDeterminant();
+            if (determinat.setJenkinsUserBuildVars(defaultTriggerCause, variables)) {
+                return;
+            }
         }
     }
 
