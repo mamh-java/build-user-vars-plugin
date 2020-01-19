@@ -4,14 +4,11 @@ import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.AbstractProject;
+import hudson.model.*;
 import hudson.model.Cause.RemoteCause;
 import hudson.model.Cause.UpstreamCause;
 import hudson.model.Cause.UserCause;
 import hudson.model.Cause.UserIdCause;
-import hudson.model.Job;
-import hudson.model.Run;
-import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
@@ -26,11 +23,7 @@ import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildWrapper;
 
 import org.jenkinsci.plugins.builduser.varsetter.IUsernameSettable;
-import org.jenkinsci.plugins.builduser.varsetter.impl.RemoteCauseDeterminant;
-import org.jenkinsci.plugins.builduser.varsetter.impl.SCMTriggerCauseDeterminant;
-import org.jenkinsci.plugins.builduser.varsetter.impl.TimerTriggerCauseDeterminant;
-import org.jenkinsci.plugins.builduser.varsetter.impl.UserCauseDeterminant;
-import org.jenkinsci.plugins.builduser.varsetter.impl.UserIdCauseDeterminant;
+import org.jenkinsci.plugins.builduser.varsetter.impl.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
@@ -116,7 +109,13 @@ public class BuildUser extends SimpleBuildWrapper {
         }
 
         log.warning(() -> "Unsupported cause type(s): " + Arrays.toString(build.getCauses().toArray()));
+        Cause defaultTriggerCause =  build.getCause(Cause.class);
+        DefaultCauseDeterminant determinat = new DefaultCauseDeterminant();
+        if (determinat.setJenkinsUserBuildVars(defaultTriggerCause, variables)) {
+            return;
+        }
     }
+
 
     @Extension
     public static class DescriptorImpl extends BuildWrapperDescriptor {
