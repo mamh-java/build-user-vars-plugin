@@ -4,6 +4,7 @@ import com.sonyericsson.rebuild.RebuildCause;
 
 import org.jenkinsci.plugins.builduser.varsetter.IUsernameSettable;
 import org.jenkinsci.plugins.builduser.varsetter.impl.ParamTimerCauseDeterminant;
+import org.jenkinsci.plugins.builduser.varsetter.impl.DefaultCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.SCMTriggerCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.TimerTriggerCauseDeterminant;
 import org.jenkinsci.plugins.builduser.varsetter.impl.UserCauseDeterminant;
@@ -127,8 +128,12 @@ public class BuildUser extends SimpleBuildWrapper {
         if (ucd.setJenkinsUserBuildVars(userCause, variables)) {
             return;
         }
-        Cause cause = (Cause) build.getCause(Cause.class);
-        System.out.println(cause);
+
+        Cause defaultTriggerCause =  build.getCause(Cause.class);
+        DefaultCauseDeterminant determinat = new DefaultCauseDeterminant();
+        if (determinat.setJenkinsUserBuildVars(defaultTriggerCause, variables)) {
+            return;
+        }
     }
 
 
