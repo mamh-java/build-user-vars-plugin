@@ -47,7 +47,7 @@ import jenkins.tasks.SimpleBuildWrapper;
 public class BuildUser extends SimpleBuildWrapper {
     private static final Logger LOGGER = Logger.getLogger(BuildUser.class.getName());
 
-    private static final String EXTENSION_DISPLAY_NAME = "Set jenkins user build variables";
+    private static final String EXTENSION_DISPLAY_NAME = "Set Build  User Variables";
 
 
     @DataBoundConstructor
